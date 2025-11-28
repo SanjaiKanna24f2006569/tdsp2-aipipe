@@ -14,3 +14,4 @@ python-multipart==0.0.6
 webdriver-manager==4.0.1
 openai-whisper
 ffmpeg
+playwright

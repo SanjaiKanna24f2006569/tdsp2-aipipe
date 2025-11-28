@@ -1,98 +1,159 @@
-# LLM Analysis Quiz Project (Using AIPipe + GPT-5-nano)
+metadata
+title: TDS LLM Analysis Quiz
+emoji: 🧠
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_file: Dockerfile
+pinned: false
+TDS LLM Analysis Quiz – Project 2
+This repository implements an automated quiz-solving API endpoint for the
+LLM Analysis Quiz as specified in the IIT Madras TDS Project 2 guidelines.
 
-## Setup Instructions
+The application accepts quiz tasks via HTTP POST, dynamically visits
+JavaScript-rendered quiz pages, performs required data sourcing, analysis,
+and visualization, submits answers within time limits, and handles
+multi-step quiz flows.
 
-### 1. Get Your AIPipe Token
+✅ Features
+FastAPI-based HTTP endpoint
+Secure request validation using secret key
+JavaScript DOM execution using Playwright (Chromium)
+Handles chained quiz URLs automatically
+Supports data extraction from HTML, APIs, PDFs
+Submits answers in required JSON formats
+Designed to meet 3-minute evaluation constraint
+🔌 API Endpoint
+Method
+POST /
 
-1. Visit https://aipipe.org/login
-2. Sign in with your Google account
-3. Copy your AIPipe token from the dashboard
-4. Paste it in your .env file
-
-### 2. Install Dependencies
-
-bash
-pip install -r requirements.txt
-
-
-### 3. Install Chrome and ChromeDriver
-
-Ubuntu or Debian:
-bash
-sudo apt-get update
-sudo apt-get install -y chromium-browser chromium-chromedriver
-
-
-macOS:
-bash
-brew install --cask google-chrome
-brew install chromedriver
-
-
-### 4. Configure Environment Variables
-
-bash
-cp .env.example .env
-# Edit .env with your actual values
-
-
-### 5. Run Locally
-
-bash
-python main.py
+Request Body (JSON)
+{
+  "email": "your_registered_email",
+  "secret": "your_secret_string",
+  "url": "https://example.com/quiz"
+}
 
 
-The API will be available at http://localhost:8000
+email: Email used while submitting the Google Form
 
-### 6. Test Your Endpoint
+secret: Secret string (validated server-side)
 
-bash
-curl -X POST http://localhost:8000/quiz \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "your-email@example.com",
-    "secret": "your_secret",
-    "url": "https://tds-llm-analysis.s-anand.net/demo"
-  }'
+url: Quiz URL to solve
+
+Responses
+
+HTTP 200 → Quiz processed successfully
+
+HTTP 403 → Invalid secret
+
+HTTP 400 → Invalid request payload
+
+🧠 Quiz Handling Logic
+
+Validate request payload and secret
+
+Launch headless Chromium via Playwright
+
+Render and parse quiz page (JS-executed DOM)
+
+Perform required data operations
+
+Submit computed answer to given submit URL
+
+Handle follow-up quiz URLs recursively until completion
+
+Only the last submission within 3 minutes is considered.
+
+🐳 Deployment (Hugging Face Spaces)
+
+This project uses Docker SDK because Playwright requires system-level
+dependencies (Chromium).
+
+Docker does not need to be installed locally.
+
+Required Files
+
+Dockerfile
+
+requirements.txt
+
+main.py (or app.py)
+
+.env (runtime secrets, not committed)
+
+Hugging Face will automatically:
+
+Build the Docker image
+
+Install Chromium + dependencies
+
+Launch the FastAPI app on port 7860
+
+📁 Environment Variables
+
+Create a .env file locally:
+
+EMAIL=your_registered_email
+SECRET=your_secret_string
+APIPIPE_TOKEN=optional_if_used
 
 
-### 7. Deploy
+Do not commit .env to the repository.
 
-1. Push code to GitHub with MIT LICENSE
-2. Deploy on Render.com or similar platform
-3. Add environment variables in deployment settings
-4. Use your deployed URL + /quiz for the Google Form
+🧪 Local Testing
 
-## Key Features
+Use Postman or curl:
 
-- Uses AIPipe proxy for GPT-5-nano access
-- Headless browser for JavaScript rendering
-- File download and processing (PDF, CSV, JSON)
-- Data analysis with pandas
-- Visualization with matplotlib/seaborn
-- AI-powered quiz solving
-- Automatic answer submission
-- Multi-stage quiz handling
-- Time-aware processing (under 3 minutes)
+POST http://localhost:8000/
 
-## AIPipe Usage
-
-This project uses AIPipe as a proxy to access GPT-5-nano:
-- Base URL: https://aipipe.org/openrouter/v1
-- Model: openai/gpt-5-nano
-- Budget: 10 cents per week (free tier)
-
-## Troubleshooting
-
-ChromeDriver issues:
-bash
-pip install webdriver-manager
+{
+  "email": "...",
+  "secret": "...",
+  "url": "https://tds-llm-analysis.s-anand.net/demo"
+}
 
 
-Timeout errors:
-- Check internet connection
-- Increase timeout values in httpx calls
+Expected behavior:
 
-Memory issues:
-- Monitor file sizes (max 1MB for submissions)
-- Use data streaming for large files
+Follows demo → demo2 → finish sequence automatically
+
+📦 Tech Stack
+
+Python 3.11
+
+FastAPI
+
+Playwright (Chromium)
+
+Requests / Pandas / NumPy (as needed)
+
+Docker (deployment)
+
+🧑‍🏫 Viva Preparation
+
+Design choices covered in viva:
+
+Why Playwright instead of requests
+
+How secrets are validated
+
+Handling JS-rendered content
+
+Timeout and retry strategy
+
+Why Docker is required on Hugging Face
+
+📜 License
+
+MIT License
+
+
+---
+
+### Final truth
+If your **README + Dockerfile + endpoint** match this,  
+you are **deployment-correct** and **evaluation-compatible**.
+
+Next thing that can break: **Dockerfile dependency order** or **Playwright args**.  
+If you want, say **“Dockerfile audit”** and I’ll harden it.
